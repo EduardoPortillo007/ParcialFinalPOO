@@ -8,34 +8,47 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 /**
  *
  * @author eloga
  */
-public class ManejadorCliente {
+public class ManejadorCliente implements Runnable{
 
-    private Socket  socketCliente;
+    private Socket socket;
 
-    public ManejadorCliente(Socket socketCliente) {
-        this.socketCliente = socketCliente;
+    public ManejadorCliente(Socket socket) {
+        this.socket = socket;
     }
-    
-   public void run() {
-        try {
 
-            InputStream inputStream = socketCliente.getInputStream();
-            OutputStream outputStream = socketCliente.getOutputStream();
+    @Override
+    public void run() {
+        try (
+            BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter salida = new PrintWriter(socket.getOutputStream(), true);
+        ) {
+            String nombre = entrada.readLine();
+            int numero = Integer.parseInt(entrada.readLine());
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            PrintWriter writer = new PrintWriter(outputStream, true);
+            System.out.println("Cliente " + nombre + " conectado.");
 
-            String msg = reader.readLine();
-            System.out.println("Mensaje del cliente: " + msg);
-            writer.println("Hola," + msg+ "");
-            socketCliente.close();
+            int cuadrado = numero * numero;
+            String fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
+            salida.println("Bienvenido, " + nombre);
+            salida.println("El cuadrado de " + numero + " es: " + cuadrado);
+            salida.println("Fecha y hora del servidor: " + fechaHora);
+
+            System.out.println("Cliente " + nombre + " desconectado.");
         } catch (IOException e) {
-
+            e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
     
