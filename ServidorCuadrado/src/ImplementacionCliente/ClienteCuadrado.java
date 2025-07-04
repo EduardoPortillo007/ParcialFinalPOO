@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Scanner;
 
 /**
  *
@@ -14,22 +15,27 @@ import java.net.Socket;
  */
 public class ClienteCuadrado {
      public static void main(String[] args) {
-        
-   
-        try {
-            Socket socket = new Socket("localhost", 5000);
-            System.out.println("Se conecto al servidor");
-            //flujo de entrada y salida
-            InputStream inputStream = socket.getInputStream();
-            OutputStream outputStream = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(outputStream, true);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            //enviar mensaje
-            writer.println("");
-            //enviar mensaje al server
-            String res = reader.readLine();
-            System.out.println("Respuesta del servidor: " + res);
-            socket.close();
+        String host = "localhost";
+        int puerto = 5000;
+
+        try (
+            Socket socket = new Socket(host, puerto);
+            BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter salida = new PrintWriter(socket.getOutputStream(), true);
+            Scanner scanner = new Scanner(System.in);
+        ) {
+            System.out.print("Ingrese su nombre: ");
+            String nombre = scanner.nextLine();
+            System.out.print("Ingrese un número entero: ");
+            int numero = scanner.nextInt();
+
+            salida.println(nombre);
+            salida.println(numero);
+
+            for(int i=0; i<3 ; i++) {
+                String respuesta = entrada.readLine();
+                System.out.println(respuesta);
+            }
 
         } catch (IOException e) {
 
